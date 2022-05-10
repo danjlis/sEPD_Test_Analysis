@@ -18,7 +18,7 @@
 #include "sEPD_Line_Functions.C"
 // Line Scan Analysis code
 
-void Analyze(std::vector<std::string> &filenames, const int sector, const std::string data_dir, const std::string save_dir_raw, const std::string save_dir_plot, const std::string save_dir_root, int ch1, int ch2, bool debug = true){
+void Analyze(std::vector<std::string> &filenames, const int sector, const std::string data_dir, const std::string save_dir_raw, const std::string save_dir_plot, const std::string save_dir_root, int ch1, int ch2, bool debug = false){
   SetyjPadStyle();
 
   // boolean for choosing the coarse of action for the dark current calculation
@@ -245,7 +245,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
             if (doTempReadout)  temp_b_dark.push_back(arr_tempb);
             if (doTempReadout)temp_c_dark.push_back(arr_tempc);
             for (int l = 0; l < NTILE; l++){
-              cout<<last_pos[0]<<", "<<last_pos[1]<<": Tile "<< l << " : "<<arr_dc[l]<<endl;
+              if (debug) cout<<last_pos[0]<<", "<<last_pos[1]<<": Tile "<< l << " : "<<arr_dc[l]<<endl;
               arr_dc[l] = 0;
               if (doTempReadout)arr_tempb[l] = 0;
               if (doTempReadout)arr_tempc[l] = 0;
@@ -610,7 +610,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       double *rats_rats_rats;
       rats_rats_rats = GetRatio(h1_tile_response, ch_1, ch_2);
 
-      cout<<ch_1<<" + "<<ch_2<<" ratio at "<<b<<": "<<*(rats_rats_rats)<<" +/- "<<*(rats_rats_rats+1)<<endl;
+      if (debug) cout<<ch_1<<" + "<<ch_2<<" ratio at "<<b<<": "<<*(rats_rats_rats)<<" +/- "<<*(rats_rats_rats+1)<<endl;
 
       double gain_comp = *(rats_rats_rats)/SiPM_Ratio[ch_1 - ch_1%2];
       hp_ratio->SetBinContent(floor(ch_1/2), gain_comp);
@@ -849,22 +849,22 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     hp_crosstalk_distance_tile[i] = new TProfile(Form("hp_crosstalk_distance_%d",i),"", bb, -2., 2.,"s");
   }
   for (int i = 1; i < 32; i++){
-    cout<<"bagend "<<i<<": "<<max_x[i]<<", "<<bag[i]<<", "<<end[i]<<endl;
-    if (i == 30) cout<<i<<endl;
+    if (debug) cout<<"bagend "<<i<<": "<<max_x[i]<<", "<<bag[i]<<", "<<end[i]<<endl;
+    if (i == 30 && debug) cout<<i<<endl;
     for (int j = 1; j <= cb ; j++){
       double x = h_bin_response[i]->GetBinCenter(j);
       if ( x < bag[i]){
         if ( i > 3 ){
           if (x > bag[i-2]){
             double third = -1*((abs(x - bag[i]))/(abs(bag[i] - bag[i-2])));
-            if (i == 30) cout<<x<<" -> "<<third<<endl;
+            if (i == 30 && debug) cout<<x<<" -> "<<third<<endl;
 
             hp_crosstalk_distance->Fill(third, h_bin_response[i]->GetBinContent(j));
             hp_crosstalk_distance_tile[i]->Fill(third, h_bin_response[i]->GetBinContent(j));
           }
           else if (x > bag[i - 4] && i != 4){
             double third = -1 - ((abs(x - bag[i - 2]))/(abs(bag[i - 2] - bag[i-4])));
-            if (i == 30) cout<<x<<" -> "<<third<<endl;
+            if (i == 30 && debug) cout<<x<<" -> "<<third<<endl;
 
             hp_crosstalk_distance->Fill(third, h_bin_response[i]->GetBinContent(j));
             hp_crosstalk_distance_tile[i]->Fill(third, h_bin_response[i]->GetBinContent(j));
@@ -969,7 +969,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   hp_ratio->SetMarkerStyle(8);
   hp_ratio->SetTitle(";Tile Row; Gain_{odd}/Gain_{even}");
   hp_ratio->DrawCopy("E2");
-  cout<<"hp_ratio: "<<hp_ratio->GetBinContent(5);
+  if (debug) cout<<"hp_ratio: "<<hp_ratio->GetBinContent(5);
   drawText("#bf{sPHENIX} Internal",xPos,yPos,0, 1, fontSize+2, fontType);
   drawText(Form("#bf{%s} Gain Comparison",sector_addon),xPos,yPos - dy,0, 1, fontSize+2, fontType);
 
