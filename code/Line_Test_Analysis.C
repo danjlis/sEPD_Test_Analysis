@@ -108,6 +108,8 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     inTree_p->SetBranchAddress("temp_b", &temp_b);
     inTree_p->SetBranchAddress("temp_c", &temp_c);
 
+    // Getting the parameters
+
     vector<string> params, paramNames;
     double xfinalcm;
     double xorigincm;
@@ -136,6 +138,8 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       if (paramNames[i] == " nRepeat" || paramNames[i] == "nRepeat") nRep = stof(params[i]);
 
     }
+
+
     // Looking for the vertical or horizontal line scans
     double origincm;
     double finalcm;
@@ -230,9 +234,10 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
 
     //Dark Current and temperature:
     std::array<float, NTILE> arr_dc = {0};
-
+    // Only used for temperature analysis
     std::array<float, NTILE> arr_tempb = {0};
     std::array<float, NTILE> arr_tempc = {0};
+    // continuous dark is the dark current gethered throughout the scan
     if (doContDark){
       for ( int i = 0; i < nEntries; i++ ){
         inTree_p->GetEntry(i);
@@ -270,6 +275,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       }
     }
 
+    // Going through to fill som histograms of the dark current and rms
     for ( int i = 0; i < nEntries; i++ ){
 
       inTree_p->GetEntry(i);
@@ -356,24 +362,32 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
         last_pos[1] = pos[1];
       }
 
+      // reading out the data into our little histograms;
       for(int it = 0; it<tile->size(); it++){
         double imonTemp = imon->at(it);
         double rmonTemp = rmon->at(it);
+
+        // only do this stuff in the case of temperature analysis
         Float_t tbTemp;
         if (doTempReadout) tbTemp = temp_b->at(it);
         Float_t tcTemp;
         if (doTempReadout) tcTemp = temp_c->at(it);
 
+        // Dark current reset
         if(xpos==0 && ypos==0){
           arr_dc[tile->at(it)] += imonTemp/static_cast<double>(NTRIALS);
           if (doTempReadout)arr_tempb[tile->at(it)] += tbTemp/static_cast<double>(NTRIALS);
           if (doTempReadout)arr_tempc[tile->at(it)] += tcTemp/static_cast<double>(NTRIALS);
         }
 
+
+        // Fill in RMON and gain voltage plot
         h1_all_rmon[tile->at(it)]->Set(h1_all_rmon[tile->at(it)]->GetN()+1);
         h1_all_rmon[tile->at(it)]->SetPoint(h1_all_rmon[tile->at(it)]->GetN()-1, h1_all_rmon[tile->at(it)]->GetN()-1, rmonTemp*42);
         h1_tile_rmon_1[tile->at(it)]->Fill(rmonTemp*42);// = new TProfile(Form("h1_tile_rmon_%d", i), "", nsteps+1, xorigincm-xstepcm/2, xfinalcm+xstepcm/2);
         h2_tile_rmon_imon[tile->at(it)]->Fill(rmonTemp*42, imonTemp);
+
+        // Fill in the tile responses:
         if(!(pos[0]==0 && pos[1]==0)){//for dark current
           if (doContDark){
             h1_tile_response_norm[tile->at(it)]->Fill(pos[x_or_y], imonTemp - (arr_dc[tile->at(it)]));
@@ -389,6 +403,8 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
             //std::cout<<pos[0]<<", "<<pos[1]<<": "<< tile->at(it)<<" = "<<imonTemp<<endl;
         }
       }//tile
+
+      // load positions
       if (last_pos[0] != pos[0] || last_pos[1] != pos[1]){
         last_pos[0] = pos[0];
         last_pos[1] = pos[1];
@@ -398,15 +414,18 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       }
     }
 
+    // normalize the tile responses
     for (int i = 0; i < NTILE; i++){
       double s = h1_tile_response[i]->GetBinContent(h1_tile_response[i]->GetMaximumBin());
       h1_tile_response_norm[i]->Scale(1./s);
     }
 
-
+    // Make a blank hist gor fun.
     TH1D *h_blank = new TH1D("h_blank", ";x [cm]; <I>_{sig} - <I>_{dark}", nsteps, 4, 88);
     h_blank->SetMaximum(max_y);
     h_blank->SetMinimum(-0.1);
+
+    // colors and plotting variables
     int colors16[16] = {kBlack, kRed+1, kBlue+1, kGreen-3, kCyan+1, kOrange -3, kMagenta -3, kGray, kRed -1, kBlue -1, kGreen -7, kCyan - 3, kOrange+1, kMagenta -5, kViolet+6, kAzure +3};
     float xPos = 0.2;
     //float xPos = 0.85;
