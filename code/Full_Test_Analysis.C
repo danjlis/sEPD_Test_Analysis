@@ -65,7 +65,7 @@ void GetUniformity(TGraphErrors *g_uni, TH2D *h_imon[], bool debug = true){
 
   }
   g_uni->SetTitle(";tile; Uniformity");
-  g_uni->SetMarkerStyle(22);
+  g_uni->SetMarkerStyle(27);
   g_uni->SetMarkerSize(2);
   g_uni->SetMarkerColor(kBlue);
   g_uni->GetHistogram()->SetMinimum(0.7);
@@ -386,7 +386,10 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   TGraphErrors *h_uniformity = new TGraphErrors(31);
   GetUniformity(h_uniformity, h2D_x_y_imon);
   gStyle->SetOptTitle(0);
+
   TCanvas *c_uni = new TCanvas("c_uni","",500, 500);
+  gPad->SetGridx(1);
+  gPad->SetGridy(1);
   h_uniformity->Draw("AP");
   drawText("#bf{sPHENIX} #it{Internal}",xPos + 0.1,yPos,0, 1, fontSize+2, fontType);
   drawText("Uniformity Test",xPos + 0.1,yPos -dy2,0, 1, fontSize+2, fontType);
