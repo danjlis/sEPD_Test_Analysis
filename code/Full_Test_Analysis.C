@@ -86,10 +86,15 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   }
   std::string fname;
   fname = MakeRootFile_Full(filename, data_dir, save_dir_raw, n_channels, debug);
-  char *sector_addon = new char[5];
-  if (sector < 10) sprintf(sector_addon, "s0%d", sector);
-  else sprintf(sector_addon,"s%d", sector);
+  char *sector_addon = new char[10];
+  if (sector == 0) sprintf(sector_addon, "STAR EPD");
+  else if (sector < 10) sprintf(sector_addon, "sEPD s0%d", sector);
+  else sprintf(sector_addon,"sEPD s%d", sector);
 
+  char *sector_addon_n = new char[10];
+  if (sector == 0) sprintf(sector_addon_n, "s00");
+  if (sector < 10) sprintf(sector_addon_n, "s0%d", sector);
+  else sprintf(sector_addon_n,"s%d", sector);
 
   char *root_path = new char[100];
   sprintf(root_path, "%s%s.root", save_dir_raw.c_str(), fname.c_str());
@@ -296,8 +301,8 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
   drawText(Form("sEPD s%d", sector),xPos,yPos-dy2,0, 1, fontSize, fontType);
 
-  c_2d_2->SaveAs(Form("%s/hist2D_x_y_IMON_allChannel_%s.pdf",save_dir_plot.c_str(), sector_addon));
-  c_2d_2->SaveAs(Form("%s/hist2D_x_y_IMON_allChannel_%s.png",save_dir_plot.c_str(), sector_addon));
+  c_2d_2->SaveAs(Form("%s/hist2D_x_y_IMON_allChannel_%s.pdf",save_dir_plot.c_str(), sector_addon_n));
+  c_2d_2->SaveAs(Form("%s/hist2D_x_y_IMON_allChannel_%s.png",save_dir_plot.c_str(), sector_addon_n));
 
   /////////////////////////////////////
   // DRAW PLOTS 2D IMON
@@ -326,13 +331,13 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
       draw_scan(it-1, xorigin, yorigin, rot);
 
     drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-    drawText(Form("sEPD %s", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
+    drawText(Form("%s", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
     drawText(Form("Tile ##bf{%d}", it),xPos,yPos-dy2*2,0, 1, fontSize, fontType);
     drawText(Form("Dark Current %0.2f #mu A", mean_dc[it]),xPos,yPos-dy2*3,0, 1, fontSize, fontType);
     drawText("<I>_{scan} - <I>_{dark} w/ source at (x, y)",xPos,yPos2,0, 1, fontSize, fontType);
 
-    c_2d_1->SaveAs(Form("%s/hist2D_x_y_IMON_tile%d_%s.pdf",save_dir_plot.c_str(),it, sector_addon));
-    c_2d_1->SaveAs(Form("%s/hist2D_x_y_IMON_tile%d_%s.png",save_dir_plot.c_str(),it, sector_addon));
+    c_2d_1->SaveAs(Form("%s/hist2D_x_y_IMON_tile%d_%s.pdf",save_dir_plot.c_str(),it, sector_addon_n));
+    c_2d_1->SaveAs(Form("%s/hist2D_x_y_IMON_tile%d_%s.png",save_dir_plot.c_str(),it, sector_addon_n));
   }
 
   TCanvas *c_all = new TCanvas("c_all","c_all", 740, 400);
@@ -345,12 +350,12 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   //draw_scan(0, xorigin, yorigin, rot);
 
   drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-  drawText(Form("sEPD %s", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
+  drawText(Form("%s", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
   drawText("All tiles #bf{Not Normalized}",xPos,yPos-dy2*2,0, 1, fontSize, fontType);
   drawText("<I>_{scan} - <I>_{dark} w/ source at (x, y)",xPos,yPos2,0, 1, fontSize, fontType);
 
-  c_all->SaveAs(Form("%s/hist2D_x_y_IMON_all_%s.pdf",save_dir_plot.c_str(), sector_addon));
-  c_all->SaveAs(Form("%s/hist2D_x_y_IMON_all_%s.png",save_dir_plot.c_str(), sector_addon));
+  c_all->SaveAs(Form("%s/hist2D_x_y_IMON_all_%s.pdf",save_dir_plot.c_str(), sector_addon_n));
+  c_all->SaveAs(Form("%s/hist2D_x_y_IMON_all_%s.png",save_dir_plot.c_str(), sector_addon_n));
 
   TCanvas *c_all_norm = new TCanvas("c_all_norm","c_all_norm", 740, 400);
   c_all_norm->SetRightMargin(0.13);
@@ -362,12 +367,12 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   //  draw_scan(0, xorigin, yorigin, rot);
 
   drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-  drawText(Form("sEPD %s", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
+  drawText(Form("%s", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
   drawText("All tiles Normalized",xPos,yPos-dy2*2,0, 1, fontSize, fontType);
   drawText("<I>_{scan} - <I>_{dark} w/ source at (x, y)",xPos,yPos2,0, 1, fontSize, fontType);
 
-  c_all_norm->SaveAs(Form("%s/hist2D_x_y_IMON_all_norm_%s.pdf",save_dir_plot.c_str(), sector_addon));
-  c_all_norm->SaveAs(Form("%s/hist2D_x_y_IMON_all_norm_%s.png",save_dir_plot.c_str(), sector_addon));
+  c_all_norm->SaveAs(Form("%s/hist2D_x_y_IMON_all_norm_%s.pdf",save_dir_plot.c_str(), sector_addon_n));
+  c_all_norm->SaveAs(Form("%s/hist2D_x_y_IMON_all_norm_%s.png",save_dir_plot.c_str(), sector_addon_n));
 
 
   TCanvas *cg = new TCanvas("cg","cg");
@@ -381,7 +386,7 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   gg->Draw("AP");
   drawText("#bf{sPHENIX} #it{Internal}",xPos + 0.1,yPos,0, 1, fontSize+2, fontType);
   drawText("Peak signal of tile above dark current",xPos + 0.1,yPos -dy2,0, 1, fontSize+2, fontType);
-  cg->SaveAs(Form("%s/CompareHeights_%s.png",save_dir_plot.c_str(), sector_addon));
+  cg->SaveAs(Form("%s/CompareHeights_%s.png",save_dir_plot.c_str(), sector_addon_n));
 
   TGraphErrors *h_uniformity = new TGraphErrors(31);
   GetUniformity(h_uniformity, h2D_x_y_imon);
@@ -395,8 +400,8 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   drawText("Uniformity Test",xPos + 0.1,yPos -dy2,0, 1, fontSize+2, fontType);
   drawText("RMS of tile responses above 0.5 #times max response",xPos + 0.1,yPos -2*dy2,0, 1, fontSize+2, fontType);
 
-  c_uni->SaveAs(Form("%s/h_uniformity_%s.pdf",save_dir_plot.c_str(), sector_addon));
-  c_uni->SaveAs(Form("%s/h_uniformity_%s.png",save_dir_plot.c_str(), sector_addon));
+  c_uni->SaveAs(Form("%s/h_uniformity_%s.pdf",save_dir_plot.c_str(), sector_addon_n));
+  c_uni->SaveAs(Form("%s/h_uniformity_%s.png",save_dir_plot.c_str(), sector_addon_n));
 
   TFile *out_hist_file = new TFile(Form("%s%s_hists.root", save_dir_root.c_str(), fname.c_str() ), "recreate");
   for (int i = 1; i < 32; i++){
@@ -405,7 +410,7 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
     h1D_imon[i]->Write();
     h1D_imon_dc[i]->Write();
   }
-  gg->SetName(Form("%s_compare_heights",sector_addon));
+  gg->SetName(Form("%s_compare_heights",sector_addon_n));
   h2D_x_y_imon_all_norm->Write();
   h2D_x_y_imon_all->Write();
   out_hist_file->Close();

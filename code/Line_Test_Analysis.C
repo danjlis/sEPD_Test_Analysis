@@ -21,10 +21,12 @@
 void Analyze(std::vector<std::string> &filenames, const int sector, const std::string data_dir, const std::string save_dir_raw, const std::string save_dir_plot, const std::string save_dir_root, int ch1, int ch2, bool debug = false){
   SetyjPadStyle();
 
-  // boolean for choosing the coarse of action for the dark current calculation
+  // boolean for continuous dark current or one-time dark current check in
   bool doContDark = true;
+  // boolean for temperature read out.
   bool doTempReadout = false;
-  bool plotTempDark = false;
+  // boolean for plotting temperature.
+  bool plotTempDark = doTempReadout&&false;
   gStyle->SetOptStat(0);
 
   // How many files are we looking at?
@@ -32,9 +34,16 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   std::vector<int> channels;
 
   // sector add on for the directories and files
-  char *sector_addon = new char[5];
-  if (sector < 10) sprintf(sector_addon, "s0%d", sector);
-  else sprintf(sector_addon,"s%d", sector);
+  char *sector_addon = new char[10];
+  if (sector == 0) sprintf(sector_addon, "STAR EPD");
+  else if (sector < 10) sprintf(sector_addon, "sEPD s0%d", sector);
+  else sprintf(sector_addon,"sEPD s%d", sector);
+
+  char *sector_addon_n = new char[10];
+  if (sector == 0) sprintf(sector_addon_n, "s00");
+  else if (sector < 10) sprintf(sector_addon_n, "s0%d", sector);
+  else sprintf(sector_addon_n,"s%d", sector);
+
   if (debug) cout<< "Destination directory for all the stuff: "<<save_dir_raw<<endl;
 
   //Making the crosstalk histogram for the sector
@@ -42,19 +51,26 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   TH1D *h_bin_response[32];
   TH1D *hp_ratio = new TH1D("h_ratio","",15, 0.5, 15.5);
 
+
   double max_x[32];
   double bag[32];
   double end[32];
+
+  // Making output file
   TFile *out_hist_file = new TFile(Form("%sLine_Test_hists.root", save_dir_root.c_str()), "recreate");
 
   // Beginning the file loop....
   for (int ff = 0; ff < size; ff++){
+    // reset channels vector for new file
     channels.clear();
+
     if (debug) cout<<"In Directory: "<<filenames.at(ff)<<endl;
 
     if (debug) cout<<"Line Scan "<<ff<<"...."<<endl;
     // Make the root file and save it to save_dir_raw
     GetChannels(filenames.at(ff), channels, debug);
+
+    // Get the channels that were run over in the test
     int n_channels = channels.size();
     int ch1 = channels.at(0);
     int ch2 = channels.at(n_channels - 1);
@@ -66,6 +82,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       cout<< ". "<<endl;
     }
     std::string fname;
+    // Make the root file for the txt file that is being read in,
     fname = MakeRootFile_Line(filenames.at(ff), data_dir, save_dir_raw, n_channels, debug);
     if (debug){
       cout<<"Made Root File"<<endl;
@@ -80,6 +97,8 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       cout<<"No File Found here"<<endl;
       continue;
     }
+
+    // Getting Tree and brnaches from this file
     TTree* inTree_p = (TTree*) fin ->Get("sEPDTree");
     if(!inTree_p){
       cout<<"No TTree found here..."<<endl;
@@ -237,16 +256,22 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     // Only used for temperature analysis
     std::array<float, NTILE> arr_tempb = {0};
     std::array<float, NTILE> arr_tempc = {0};
-    // continuous dark is the dark current gethered throughout the scan
+
+    // continuous dark is the dark current gathered throughout the scan
     if (doContDark){
       for ( int i = 0; i < nEntries; i++ ){
+
+        // get entry and also position of the source.
         inTree_p->GetEntry(i);
         pos[0] = xpos;
         pos[1] = ypos;
 
+        // If the last position is not the same as the current, and the last position was 0, then save the new dark current.
         if (last_pos[x_or_y] != pos[x_or_y]){
           if (last_pos[0] == 0){
             dark_current.push_back(arr_dc);
+
+            // Record the temperature as well.
             if (doTempReadout)  temp_b_dark.push_back(arr_tempb);
             if (doTempReadout)temp_c_dark.push_back(arr_tempc);
             for (int l = 0; l < NTILE; l++){
@@ -311,6 +336,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
 
     /////////////////////////////////////
     // Calculate Dark Current
+    ////////////////////////////////////
 
     if (debug) printf("DarkCurrent Values: \n");
     if (debug) printf(" --------------------------------------------- \n");
@@ -345,7 +371,11 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       arr_tempb[l] = 0;
       arr_tempc[l] = 0;
     }
+    /////////////////
+    // Now to get all of the data frOm the root file and organize it.
+    /////////////////
     for (int i = 0; i < nEntries; i++){
+      // Get the position
       inTree_p->GetEntry(i);
       pos[0] = xpos;
       pos[1] = ypos;
@@ -463,7 +493,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       oo++;
     }
     drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-    drawText(Form("sEPD %s Crosstalk Test #bf{NOT NORMALIZED}", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
+    drawText(Form("%s Crosstalk Test #bf{NOT NORMALIZED}", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
     if (oo > 2){
       if (ch_1 == 30 || ch_2 == 30) drawText("Tile 1 and Even Tiles",xPos,yPos-2*dy2,0, 1, fontSize, fontType);
       else if (ch_1 == 31 || ch_2 == 31) drawText("Tile 1 and Odd Tiles",xPos,yPos-2*dy2,0, 1, fontSize, fontType);
@@ -519,7 +549,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       }
     }
     drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-    drawText(Form("sEPD %s Crosstalk Test", sector_addon) ,xPos,yPos-dy2,0, 1, fontSize, fontType);
+    drawText(Form("%s Crosstalk Test", sector_addon) ,xPos,yPos-dy2,0, 1, fontSize, fontType);
     drawText(Form("Sector %s", sector_addon),xPos,yPos-2*dy2,0, 1, fontSize, fontType);
     // drawText("SiPM Switched",xPos,yPos-3*dy2,0, 1, fontSize, fontType);
     drawText(Form( "Tiles: %d, %d, %d, %d", h1, h2 - 4, h2 -2, h2),xPos,yPos-4*dy2,0, 1, fontSize, fontType);
@@ -568,7 +598,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       }
     }
     drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-    drawText(Form("sEPD %s Crosstalk Test", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
+    drawText(Form("%s Crosstalk Test", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
     drawText(Form("Sector %s", sector_addon),xPos,yPos-2*dy2,0, 1, fontSize, fontType);
     // drawText("SiPM Switched",xPos,yPos-3*dy2,0, 1, fontSize, fontType);
     drawText(Form( "Tiles: %d, %d, %d, %d", h1, h2 - 4, h2 -2, h2),xPos,yPos-4*dy2,0, 1, fontSize, fontType);
@@ -606,7 +636,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       oo++;
     }
     drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-    drawText(Form("sEPD %s Crosstalk Test #bf{NORMALIZED}", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
+    drawText(Form("%s Crosstalk Test #bf{NORMALIZED}", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
     if (oo > 2){
       if (ch_1 == 30 || ch_2 == 30) drawText("Tile 1 and Even Tiles",xPos,yPos-2*dy2,0, 1, fontSize, fontType);
       else if (ch_1 == 31 || ch_2 == 31) drawText("Tile 1 and Odd Tiles",xPos,yPos-2*dy2,0, 1, fontSize, fontType);
@@ -807,7 +837,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     tl1->AddEntry(g_far[i],"Next to neighboring tile (New)");
     tl1->SetTextFont(50);
     tl1->Draw();
-    c3->SaveAs(Form("%s/Crosstalk_%s_tile_%d.pdf", save_dir_plot.c_str(),sector_addon, i+1));
+    c3->SaveAs(Form("%s/Crosstalk_%s_tile_%d.pdf", save_dir_plot.c_str(),sector_addon_n, i+1));
 
   }
   yPos = 0.84;
@@ -851,7 +881,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   drawText(Form("Near Neighbor Mean: %.3f", h_tile_cross_near->GetMean()), xPos + 0.12 ,0.51,0, 1, fontSize+2, fontType);
   drawText(Form("Next Neighbor Mean: %.3f", h_tile_cross_far->GetMean()), xPos+.12,0.51 - dy,0, 1, fontSize+2, fontType);
 
-  c4->SaveAs(Form("%s/nextandnear_crosstalk_%s.pdf", save_dir_plot.c_str(), sector_addon));
+  c4->SaveAs(Form("%s/nextandnear_crosstalk_%s.pdf", save_dir_plot.c_str(), sector_addon_n));
   out_hist_file->cd();
   h_tile_cross_near->Write();
   h_tile_cross_far->Write();
@@ -943,7 +973,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   hp_crosstalk_distance->SetTitle(";Distance from Observed Tile (#frac{1}{L_{tile}}); <Signal_{away}/Signal_{over}>_{bin}");
 
   hp_crosstalk_distance->DrawCopy("E1");
-  drawText(Form("#bf{sPHENIX} sEPD Crosstalk Test - #bf{%s}", sector_addon), xPos,yPos,0, 1, fontSize+2, fontType);
+  drawText(Form("#bf{sPHENIX} sEPD Crosstalk Test - #bf{%s}", sector_addon_n), xPos,yPos,0, 1, fontSize+2, fontType);
   drawText("Adjacent Tile Average", xPos,yPos - dy,0, 1, fontSize+2, fontType);
   double y1 = minp;
   double y2 = maxp;
@@ -970,7 +1000,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   drawText(" i + 1 ", 0.6,yPos - 3*dy,0, 1, fontSize+5, fontType);
   drawText(" i + 2 ", 0.8,yPos - 4*dy,0, 1, fontSize+5, fontType);
 
-  c8->SaveAs(Form("%s/Adjacent_tiles_%s.pdf", save_dir_plot.c_str(), sector_addon));
+  c8->SaveAs(Form("%s/Adjacent_tiles_%s.pdf", save_dir_plot.c_str(), sector_addon_n));
   out_hist_file->cd();
 
   hp_crosstalk_distance->Write();

@@ -13,8 +13,19 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
   char *sec_head = new char[10];
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
-  if (sector < 10) sprintf(sec_head, "s0%d", sector);
+  if (sector == 0) sprintf(sec_head, "s00");
+  else if (sector < 10) sprintf(sec_head, "s0%d", sector);
   else sprintf(sec_head,"s%d", sector);
+
+  char *sec_headf = new char[10];
+  if (sector == 0) sprintf(sec_headf, "STAR EPD");
+  else if (sector < 10) sprintf(sec_headf, "sEPD s0%d", sector);
+  else sprintf(sec_headf,"sEPD s%d", sector);
+
+  char *sec_headt = new char[10];
+  if (sector == 0) sprintf(sec_headt, "STAR EPD");
+  else if (sector < 10) sprintf(sec_headt, "s0%d", sector);
+  else sprintf(sec_headt,"s%d", sector);
 
   TFile *in_Line = new TFile(Form("%sLine_Test_hists.root", save_dir_root.c_str()), "read");
   TH2D *h_cross = (TH2D*) in_Line->Get("h2D_crosstalk");
@@ -69,7 +80,7 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
   double max_y = 1.2;
 
   top_name->cd();
-  TText *t = new TText(0.38, 0.5, Form("%s Health Sheet", sec_head));
+  TText *t = new TText(0.38, 0.5, Form("%s Health Sheet", sec_headt));
   t->SetTextSize(0.5);
   t->Draw();
   top_left->cd();
@@ -80,7 +91,7 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
   //  draw_scan(0, xorigin, yorigin, rot);
 
   drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-  drawText(Form("sEPD %s", sec_head),xPos,yPos-dy2,0, 1, fontSize, fontType);
+  drawText(Form("%s", sec_headf),xPos,yPos-dy2,0, 1, fontSize, fontType);
   drawText("All tiles Normalized",xPos,yPos-dy2*2,0, 1, fontSize, fontType);
   drawText("<I>_{scan} - <I>_{dark} w/ source at (x, y)",xPos,yPos2,0, 1, fontSize, fontType);
 
@@ -134,7 +145,7 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
     }
   }
   drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-  drawText(Form("sEPD %s Crosstalk Test #bf{NOT NORMALIZED}", sec_head),xPos,yPos-dy2,0, 1, fontSize, fontType);
+  drawText(Form("%s Crosstalk Test #bf{NOT NORMALIZED}", sec_headf),xPos,yPos-dy2,0, 1, fontSize, fontType);
   drawText("Tile 1 and Even Tiles",xPos,yPos-2*dy2,0, 1, fontSize, fontType);
 
   top_right->cd();
@@ -154,7 +165,7 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
     }
   }
   drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-  drawText(Form("sEPD %s Crosstalk Test #bf{NOT NORMALIZED}", sec_head),xPos,yPos-dy2,0, 1, fontSize, fontType);
+  drawText(Form("%s Crosstalk Test #bf{NOT NORMALIZED}", sec_headf),xPos,yPos-dy2,0, 1, fontSize, fontType);
   drawText("Tile 1 and Odd tiles",xPos,yPos-2*dy2,0, 1, fontSize, fontType);
   mid_mid->cd();
 
@@ -168,7 +179,7 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
   gPad->SetGrid(1,1);
   hp_ratio->Draw("E1");
   drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-  drawText(Form("sEPD %s Gain Comparison", sec_head),xPos,yPos-dy2,0, 1, fontSize, fontType);
+  drawText(Form("%s Gain Comparison", sec_headf),xPos,yPos-dy2,0, 1, fontSize, fontType);
 
   bot_mid->cd();
   double max_vi = 2+ max(h_tile_cross_far->GetBinContent(h_tile_cross_far->GetMaximumBin()), h_tile_cross_near->GetBinContent(h_tile_cross_near->GetMaximumBin())) + 1.;
