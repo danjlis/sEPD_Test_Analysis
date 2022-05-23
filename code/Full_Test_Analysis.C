@@ -47,7 +47,7 @@ void GetUniformity(TGraphErrors *g_uni, TH2D *h_imon[], bool debug = true){
 
         bin = h_imon[i]->GetBin(j, k);
         value = h_imon[i]->GetBinContent(bin);///norm;
-        if (debug && xloc< hx && xloc > lx && yloc < hy && yloc > ly&& value/norm > min)cout<<"bin "<<bin<<": value = "<<value<<", value/norm = "<<value/norm<<endl;
+        //if (debug && xloc< hx && xloc > lx && yloc < hy && yloc > ly&& value/norm > min)cout<<"bin "<<bin<<": value = "<<value<<", value/norm = "<<value/norm<<endl;
 
         if (xloc< hx && xloc > lx && yloc < hy && yloc > ly&& value/norm > min) {
           //if (debug) cout<<"in it"<<endl;
@@ -74,7 +74,7 @@ void GetUniformity(TGraphErrors *g_uni, TH2D *h_imon[], bool debug = true){
 }
 void Analyze(std::string filename, const int sector, const std::string data_dir, const std::string save_dir_raw, const std::string save_dir_plot, const std::string save_dir_root, const int ch_1 = 0, const int ch_2 = 0, const int ch_3 = 0, const int ch_4 = 0, bool debug = true)
 {
-
+  bool darkInCorner = true;
   gStyle->SetOptStat(0);
   SetyjPadStyle();
   int size = 1;
@@ -156,6 +156,7 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
 
   TH1D* h1D_imon[nTILE];//imon dist for all source positions including dark current
   TH1D* h1D_imon_dc[nTILE];//imon dist for only for dark current
+  TH1D* h1D_imon_dc2[nTILE];//imon dist for only for dark current
 
   const double xo = 3;
   const double yo = 0;
@@ -177,8 +178,9 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   for(int it = 0; it < nTILE; it++){
     g_all_locs[it] = new TGraph();
     h2D_x_y_imon[it] = new TH2D(Form("h2D_x_y_imon_tile%d", it), ";x [cm];y [cm]", nx, xMin, xMax, ny, yMin, yMax);
-    h1D_imon[it] = new TH1D(Form("h1D_imon_tile%d", it), ";SiPM current (IMON) [#muA];", 2000, 0, 20.000);
-    h1D_imon_dc[it] = new TH1D(Form("h1D_imon_darkCurrent_tile%d", it), ";SiPM current (IMON) [#muA];", 2000, 0, 20.000);
+    h1D_imon[it] = new TH1D(Form("h1D_imon_tile%d", it), ";SiPM current (IMON) [#muA];", 100, 0, 1);
+    h1D_imon_dc[it] = new TH1D(Form("h1D_imon_darkCurrent_tile%d", it), ";SiPM current (IMON) [#muA];", 100, 0, 1);
+    h1D_imon_dc2[it] = new TH1D(Form("h1D_imon_darkCurrent_tile_2%d", it), ";SiPM current (IMON) [#muA];", 100, 0, 1);
   }
 
   /////////////////////////////////////
@@ -186,18 +188,30 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   int nEntries = inTree_p->GetEntries();
   int nDiv = TMath::Max((int)1, nEntries/100);
   std::cout << "Total number of scan steps = " << nEntries << std::endl;
-  for(int entry = 0; entry < 3; entry++){
+  for(int entry = 0; entry < nEntries; entry++){
     if(nEntries%nDiv == 0) std::cout << " Entry " << entry << "/" << nEntries << std::endl;
-    inTree_p->GetEntry(entry);
-    for(int it = 0; it<tile->size(); it++){
-      double imonTemp = imon->at(it);
-      //if(xpos==xo && ypos==yo){//for dark current
-        h1D_imon_dc[tile->at(it)]->Fill(imonTemp);
-    //  }
-    }//tile
+    if (entry < 3){
+      inTree_p->GetEntry(entry);
+      for(int it = 0; it<tile->size(); it++){
+        double imonTemp = imon->at(it);
+        //if(xpos==xo && ypos==yo){//for dark current
+          h1D_imon_dc[tile->at(it)]->Fill(imonTemp);
+      //  }
+      }//tile
+    }
+    else {
+      inTree_p->GetEntry(entry);
+      for(int it = 0; it<tile->size(); it++){
+        double imonTemp = imon->at(it);
+        h1D_imon_dc2[tile->at(it)]->Fill(imonTemp);
+      }//tile
+    }
   }//event loop
+
   /////////////////////////////////////
   // Calculate Dark Current
+  double mean_dc2[nTILE];
+
   double mean_dc[nTILE];
   double rms_dc[nTILE];
   int nScanCount[nTILE];
@@ -205,11 +219,20 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   printf(" --------------------------------------------- \n");
 
   for(int it = 0; it < nTILE; it++){
+    int nbin_dark = h1D_imon_dc2[it]->GetNbinsX();
+    for (int itt = 1; itt <= nbin_dark; itt++){
+      if (h1D_imon_dc2[it]->GetBinContent(itt) > 0){
+          mean_dc2[it] = h1D_imon_dc2[it]->GetBinCenter(itt);
+          break;
+      }
+    }
     mean_dc[it] = h1D_imon_dc[it]->GetMean();
+    if (darkInCorner) mean_dc[it] = mean_dc2[it];
     rms_dc[it] = h1D_imon_dc[it]->GetRMS();
     printf("Tile %d: %f +/- %f \n", it, mean_dc[it], rms_dc[it]);
     nScanCount[it] = 0;
   }
+
   /////////////////////////////////////
   // EVENT LOOP
 
@@ -242,6 +265,7 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   int b;
   double v;
   double norm;
+
   for ( int i = 1 ; i <= n_bins_x; i++){
     for ( int j = 1; j <= n_bins_y; j++){
       max_v = 0;
@@ -402,7 +426,10 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
 
   c_uni->SaveAs(Form("%s/h_uniformity_%s.pdf",save_dir_plot.c_str(), sector_addon_n));
   c_uni->SaveAs(Form("%s/h_uniformity_%s.png",save_dir_plot.c_str(), sector_addon_n));
-
+  TCanvas *ccc = new TCanvas("ccc","",500, 500);
+  gPad->SetGridx(1);
+  gPad->SetGridy(1);
+  h1D_imon_dc2[5]->Draw("hist");
   TFile *out_hist_file = new TFile(Form("%s%s_hists.root", save_dir_root.c_str(), fname.c_str() ), "recreate");
   for (int i = 1; i < 32; i++){
     g_all_locs[i]->Write();
