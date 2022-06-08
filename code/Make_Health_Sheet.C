@@ -156,7 +156,6 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
   top_left->cd();
   h_all_norm->GetXaxis()->SetTitleOffset(2.75);
   h_all_norm->GetYaxis()->SetTitleOffset(2.75);
-  h_all_norm->GetZaxis()->SetMaximum(0.45);
   h_all_norm->Draw("colz");
   //  draw_scan(0, xorigin, yorigin, rot);
 
