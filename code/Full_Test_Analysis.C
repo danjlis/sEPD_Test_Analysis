@@ -446,7 +446,7 @@ void Analyze(std::string filename, const int sector, const std::string data_dir,
   h_uniformity->SetName("h_uniformity");
   h_uniformity->Write();
   gg->Write();
-
+  h2D_x_y_imon_all->Write();
   h2D_x_y_imon_all_norm->Write();
   health->Close();
   return;

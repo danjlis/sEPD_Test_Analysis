@@ -9,21 +9,90 @@
 #include <dirent.h>
 #include "dlUtility.h"
 
-void Analyze(const int sector, const std::string data_dir, const std::string save_dir_raw, const std::string save_dir_plot, const std::string save_dir_root, bool debug = true){
+int drawNotes(const int sector){
+  double xPos = 0.15;
+  double yPos = 0.6;
+  double dy = 0.04;
+  double fontType = 43;
+  double fontSize = 13;
+  int grade;
+  switch(sector){
+
+    case 0:
+      grade = 2;
+      drawText("One outlier on crosstalk",xPos,yPos,0, 1, fontSize, fontType);
+      break;
+    case 1:
+      grade = 4;
+      drawText("Gain comparison is inconsistent",xPos,yPos,0, 1, fontSize, fontType);
+      drawText("Low signal",xPos,yPos - dy,0, 1, fontSize, fontType);
+      break;
+
+    case 2:
+      grade = 4;
+      drawText("Low signal in larger tiles",xPos,yPos,0, 1, fontSize, fontType);
+      break;
+
+    case 3:
+      grade = 2;
+      drawText("Larger crosstalk tahn normal",xPos,yPos,0, 1, fontSize, fontType);
+      drawText("Gain comparison high for small tiles",xPos,yPos,0, 1, fontSize, fontType);
+      break;
+    case 4:
+      grade = 6;
+      drawText("Low signal accross board",xPos,yPos,0, 1, fontSize, fontType);
+      drawText("Crosstalk is high",xPos,yPos,0, 1, fontSize, fontType);
+      break;
+
+
+    case 5:
+      grade = 1;
+      drawText("Best so far.",xPos,yPos,0, 1, fontSize, fontType);
+      break;
+
+    case 6:
+      grade = 7;
+      drawText("Low signal, almost nothing",xPos,yPos,0, 1, fontSize, fontType);
+      break;
+
+    case 7:
+      grade = 8;
+      drawText("Low signal, almost nothing",xPos,yPos,0, 1, fontSize, fontType);
+      break;
+
+    case 8:
+      grade = 6;
+      drawText("Dead tile (5) and low signal",xPos,yPos,0, 1, fontSize, fontType);
+      break;
+
+    case 9:
+      grade = 2;
+      drawText("",xPos,yPos,0, 1, fontSize, fontType);
+      break;
+
+  }
+
+
+  return grade;
+}
+void Analyze(const int sector, const std::string data_dir, const std::string save_dir_raw, const std::string save_dir_plot, const std::string save_dir_root, bool debug = true, const int save_me_int = -1){
   char *sec_head = new char[10];
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
-  if (sector == 0) sprintf(sec_head, "s00");
+  if (save_me_int != -1) sprintf(sec_head, "BLIND");
+  else if (sector == 0) sprintf(sec_head, "s00");
   else if (sector < 10) sprintf(sec_head, "s0%d", sector);
   else sprintf(sec_head,"s%d", sector);
-
   char *sec_headf = new char[10];
-  if (sector == 0) sprintf(sec_headf, "STAR EPD");
+  if (save_me_int != -1) sprintf(sec_headf, "BLIND");
+  else if (sector == 0) sprintf(sec_headf, "STAR EPD");
   else if (sector < 10) sprintf(sec_headf, "sEPD s0%d", sector);
   else sprintf(sec_headf,"sEPD s%d", sector);
 
+
   char *sec_headt = new char[10];
-  if (sector == 0) sprintf(sec_headt, "STAR EPD");
+  if (save_me_int != -1) sprintf(sec_headt, "BLIND");
+  else if (sector == 0) sprintf(sec_headt, "STAR EPD");
   else if (sector < 10) sprintf(sec_headt, "s0%d", sector);
   else sprintf(sec_headt,"s%d", sector);
 
@@ -44,7 +113,7 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
 
   TFile *in_Full = new TFile(Form("%shealth_hist.root", save_dir_root.c_str()), "read");
   TGraphErrors *h_uniformity = (TGraphErrors*) in_Full->Get("h_uniformity");
-  TH2D *h_all_norm = (TH2D*) in_Full->Get("h2D_x_y_imon_all_norm");
+  TH2D *h_all_norm = (TH2D*) in_Full->Get("h2D_x_y_imon_all");
 
   TCanvas* c_health_sheet = new TCanvas("c_health_sheet","", 1500, 1000);
   TPad *top_name = new TPad("top_name", "", 0.0, 0.9, 1.0, 1.0);
@@ -78,21 +147,22 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
   float fontType = 43;
   float fontSize = 13;
   double max_y = 1.2;
-
-  top_name->cd();
-  TText *t = new TText(0.38, 0.5, Form("%s Health Sheet", sec_headt));
-  t->SetTextSize(0.5);
-  t->Draw();
+  if (save_me_int == -1){
+    top_name->cd();
+    TText *t = new TText(0.38, 0.5, Form("%s Health Sheet", sec_headt));
+    t->SetTextSize(0.5);
+    t->Draw();
+  }
   top_left->cd();
   h_all_norm->GetXaxis()->SetTitleOffset(2.75);
   h_all_norm->GetYaxis()->SetTitleOffset(2.75);
-
+  h_all_norm->GetZaxis()->SetMaximum(0.45);
   h_all_norm->Draw("colz");
   //  draw_scan(0, xorigin, yorigin, rot);
 
   drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
   drawText(Form("%s", sec_headf),xPos,yPos-dy2,0, 1, fontSize, fontType);
-  drawText("All tiles Normalized",xPos,yPos-dy2*2,0, 1, fontSize, fontType);
+  drawText("All tiles Not-Normalized",xPos,yPos-dy2*2,0, 1, fontSize, fontType);
   drawText("<I>_{scan} - <I>_{dark} w/ source at (x, y)",xPos,yPos2,0, 1, fontSize, fontType);
 
 
@@ -239,30 +309,31 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
   drawText("Adjacent Tile Average", xPos,yPos - dy,0, 1, fontSize+2, fontType);
 
   bot_left->cd();
-  TPad *in_pad = new TPad("in_pad","", 0.5, 0.5, 0.9, 0.9);
-  in_pad->SetTopMargin(0.001);
-  in_pad->SetLeftMargin(0.001);
-  in_pad->SetBottomMargin(0.001);
-  in_pad->SetRightMargin(0.001);
-  in_pad->Draw("SAME");
-  in_pad->cd();
-  TImage* image_p = nullptr;
-  std::string testPass = "B";
-  if(testPass == "A") image_p = TImage::Open("pics/A_grade.png");
-  else if(testPass == "B") image_p = TImage::Open("pics/B_grade.png");
-  else if(testPass == "C") image_p = TImage::Open("pics/C_grade.png");
-  else if(testPass == "D") image_p = TImage::Open("pics/D_grade.png");
-  else if(testPass == "F") image_p = TImage::Open("pics/F_grade.png");
+  int grade = drawNotes(sector);
+  std::string grade_s;
+  if (grade == 1) grade_s = "A";
+  else if (grade == 2) grade_s = "A-";
+  else if (grade == 3) grade_s = "B+";
+  else if (grade == 4) grade_s = "B";
+  else if (grade == 5) grade_s = "B-";
+  else if (grade == 6) grade_s = "C+";
+  else if (grade == 7) grade_s = "C";
+  else if (grade == 8) grade_s = "C-";
+  else if (grade == 9) grade_s = "D";
 
-  image_p->SetImageQuality(TImage::kImgBest);
-  image_p->Draw();
-  bot_left->cd();
-  drawText("#bf{Final Grade}: ", 0.25,0.8,0, 1, fontSize+8, fontType);
-  drawText("#bf{Notes}: Notes on the sector",0.13,0.47,0, 1, fontSize+3, fontType);
-  c_health_sheet->SaveAs(Form("../Results/Health_Sheets/%s_Health_Sheet.pdf", sec_head));
-  c_health_sheet->SaveAs(Form("%s%s_Health_Sheet.pdf", save_dir_plot.c_str(), sec_head));
-  c_health_sheet->SaveAs(Form("../Results/Health_Sheets/%s_Health_Sheet.png", sec_head));
-  c_health_sheet->SaveAs(Form("%s%s_Health_Sheet.png", save_dir_plot.c_str(), sec_head));
+  drawText(Form("#bf{Temporary Grade}: %s",grade_s.c_str()), 0.15,0.8,0, 1, fontSize+8, fontType);
+  drawText("Notes:", 0.15, 0.7, 0, 1,fontSize+8, fontType);
+  drawNotes(sector);
+  cout<<grade_s<<endl;
+  if (save_me_int == -1){
+    c_health_sheet->SaveAs(Form("../Results/Health_Sheets/%s_Health_Sheet.pdf", sec_head));
+    c_health_sheet->SaveAs(Form("%s%s_Health_Sheet.pdf", save_dir_plot.c_str(), sec_head));
+    c_health_sheet->SaveAs(Form("../Results/Health_Sheets/%s_Health_Sheet.png", sec_head));
+    c_health_sheet->SaveAs(Form("%s%s_Health_Sheet.png", save_dir_plot.c_str(), sec_head));
+  }
+  else {
+    c_health_sheet->SaveAs(Form("../Results/Health_Sheets/Health_Sheet_%d.png", save_me_int));
+  }
   return;
 }
 
@@ -282,9 +353,13 @@ void Make_Health_Sheet(const int &sector = -1){
   const std::string save_dir_raw = "../Results/"+std::string(sec_head)+"/root_raw/";
 
   // Now we have out file names
-  bool debug = true;
+  bool debug = false;
+
+  TRandom3 *gra = new TRandom3(0);
   // analyze the data
-  Analyze(sector, data_dir, save_dir_raw, save_dir_plot, save_dir_root, debug);
+  double save_me = gra->Rndm();
+  const int save_me_int = -1; //floor(1 + (9999*save_me));
+  Analyze(sector, data_dir, save_dir_raw, save_dir_plot, save_dir_root, debug, save_me_int);
 
 
 return;
