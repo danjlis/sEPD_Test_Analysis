@@ -1022,8 +1022,8 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   drawText("#bf{sPHENIX} Internal",xPos,yPos,0, 1, fontSize+2, fontType);
   drawText(Form("#bf{%s} Gain Comparison",sector_addon),xPos,yPos - dy,0, 1, fontSize+2, fontType);
 
-  c9->SaveAs(Form("%s/GainComparison_%s.pdf", save_dir_plot.c_str(), sector_addon));
-  c9->SaveAs(Form("%s/GainComparison_%s.png", save_dir_plot.c_str(), sector_addon));
+  c9->SaveAs(Form("%s/GainComparison_%s.pdf", save_dir_plot.c_str(), sector_addon_n));
+  c9->SaveAs(Form("%s/GainComparison_%s.png", save_dir_plot.c_str(), sector_addon_n));
 
   out_hist_file->cd();
   hp_ratio->Write();
