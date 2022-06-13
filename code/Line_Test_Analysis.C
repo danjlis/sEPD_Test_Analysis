@@ -27,6 +27,10 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   bool doTempReadout = false;
   // boolean for plotting temperature.
   bool plotTempDark = doTempReadout&&false;
+
+  // boolean for plotting the gain depending on the vertical or horizontal line scans;
+  bool useLongScan = true;
+
   gStyle->SetOptStat(0);
 
   // How many files are we looking at?
@@ -50,6 +54,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   TH2D *h2D_crosstalk = new TH2D("h2D_crosstalk","",31, 0.5, 31.5, 31, 0.5, 31.5);
   TH1D *h_bin_response[32];
   TH1D *hp_ratio = new TH1D("h_ratio","",15, 0.5, 15.5);
+  TProfile *h1_tile_response_long[32];
 
 
   double max_x[32];
@@ -74,7 +79,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     int n_channels = channels.size();
     int ch1 = channels.at(0);
     int ch2 = channels.at(n_channels - 1);
-    if (true) {
+    if (debug) {
       cout<<"Channels scanned: ";
       for (int j = 0; j < n_channels; j++){
         cout<<channels.at(j)<<" ";
@@ -227,6 +232,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     TH1D *h1_tile_rmon_1[NTILE];
     TGraph *h1_all_rmon[NTILE];
     TGraph *h1_all_imon[NTILE];
+
     for (int i = 0; i < NTILE; i++){
       h1_bin_response_temp[i] = new TH1D(Form("h1_bin_response_temp_%d_%d_ch%d",ch1, ch2, i), "", nsteps+1, origincm-stepcm/2, finalcm+stepcm/2);
       h1_tile_response[i] = new TProfile(Form("h1_tile_response_%d_%d_ch%d",ch1, ch2, i), "", nsteps+1, origincm-stepcm/2, finalcm+stepcm/2);
@@ -443,7 +449,19 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
 
       }
     }
-
+    int ii;
+    if (x_or_y == 0){
+      for (int i = 0; i < 16;i++){
+        if ( ch1 == 30){
+          if (i == 0) ii = 1;
+          else ii = 2*i;
+          h1_tile_response_long[2*i] = h1_tile_response[ii];
+        }
+        else if ( ch1 == 31){
+          h1_tile_response_long[2*i + 1] = h1_tile_response[2*i + 1];
+        }
+      }
+    }
     // normalize the tile responses
     for (int i = 0; i < NTILE; i++){
       double s = h1_tile_response[i]->GetBinContent(h1_tile_response[i]->GetMaximumBin());
@@ -653,7 +671,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     c_full_norm->SaveAs(Form("%s%s_norm.png", save_dir_plot.c_str(), fname.c_str()));
     c_full_norm->SaveAs(Form("%s%s_norm.pdf", save_dir_plot.c_str(), fname.c_str()));
 
-    if (x_or_y == 1){
+    if (!useLongScan && x_or_y == 1){
 
       int b = static_cast<int>(floor(static_cast<double>(ch_1)/2.));
       double *rats_rats_rats;
@@ -1005,6 +1023,20 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
 
   hp_crosstalk_distance->Write();
 
+
+  if (useLongScan){
+    double *rats_rats_rats;
+    double gain_comp;
+    int ch_11, ch_22;
+    for (int j = 0; j < 15; j++){
+      ch_11 = 2*(j+1);
+      ch_22 = 2*(j+1)+1;
+      rats_rats_rats = GetRatio(h1_tile_response_long, ch_11, ch_22);
+      gain_comp = *(rats_rats_rats)/SiPM_Ratio[ch_11 - ch_11%2];
+      hp_ratio->SetBinContent(floor(ch_11/2), gain_comp);
+      hp_ratio->SetBinError(floor(ch_11/2), *(rats_rats_rats+1));
+    }
+  }
   TCanvas *c9 = new TCanvas("c9","", 500, 500);
 
   gPad->SetGridx(1);
