@@ -156,9 +156,7 @@ void Analyze(const int sector, const std::string data_dir, const std::string sav
   top_left->cd();
   h_all_norm->GetXaxis()->SetTitleOffset(2.75);
   h_all_norm->GetYaxis()->SetTitleOffset(2.75);
-  h_all_norm->Draw("col");
-  TPaletteAxis *palette = new TPaletteAxis(95.5, 0, 102, 50, h_all_norm);
-  palette->Draw();
+  h_all_norm->Draw("colz");
   //  draw_scan(0, xorigin, yorigin, rot);
 
   drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
