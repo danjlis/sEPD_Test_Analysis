@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 #include "TTree.h"
-#include "TFile.h"
+
 #include "TFile.h"
 #include <dirent.h>
 
@@ -138,12 +138,12 @@ int GetCrosstalkDistance(TH1D *h_bin_response[], double max_x[], double bag[], d
 
 
 void FillCrossTalk(TH2D *h2D_crosstalk, TProfile *h1_tile_response[], int ch_1, int ch_2){
-  bool debug = false;
+  bool debug = true;
   if (debug) cout<<"Crosstalking... "<<ch_1<<"_"<<ch_2<<endl;
   double integral[32] = {0};
   int NTILES = 32;
-  int channels[16];
-  double binlength[16];// = {0};
+  int channels[17];
+  double binlength[17] = {0};
   int size;
   if (abs(ch_1 - ch_2) == 1){
     channels[0] = ch_1;
@@ -180,12 +180,14 @@ void FillCrossTalk(TH2D *h2D_crosstalk, TProfile *h1_tile_response[], int ch_1, 
         binlength[i] = binlength[i] + 1.;
       }
     }
+    if (debug) cout<<"Ref "<<channels[i]<<" : " << ref[channels[i]] << " - " << binlength[i] << std::endl;
   }
+
   int nbins;
   if (debug) cout<<"Ending the crosstalk with: "<<endl;
   for (int i = 0; i < size;i++){
     for(int j = 0; j < size;j++){
-      if (i == j) continue;
+      //if (i == j) continue;
       nbins = h1_tile_response[channels[i]]->GetNbinsX();
       for (int b = 1; b <= nbins; b++){
         double max = 0;
@@ -201,9 +203,9 @@ void FillCrossTalk(TH2D *h2D_crosstalk, TProfile *h1_tile_response[], int ch_1, 
         if (max_i != channels[j]) continue;
         if (max < min*norms[channels[j]]) continue;
 
-        h2D_crosstalk->Fill(channels[i], channels[j], (binlength[i]/binlength[j])*(h1_tile_response[channels[i]]->GetBinContent(b)/ref[channels[i]]));
+        h2D_crosstalk->Fill(channels[i], channels[j], (binlength[j]/binlength[i])*(h1_tile_response[channels[i]]->GetBinContent(b)/ref[channels[j]]));
       }
-        if (debug) cout<<"Reading "<<channels[i]<<" over "<<channels[j]<<": "<<h2D_crosstalk->GetBinContent(h2D_crosstalk->GetBin(channels[i], channels[j]))<<endl;
+      if (debug) cout<<"Reading "<<channels[i]<<" over "<<channels[j]<<": "<<h2D_crosstalk->GetBinContent(h2D_crosstalk->GetBin(channels[i], channels[j]))<<endl;
     }
 
   }

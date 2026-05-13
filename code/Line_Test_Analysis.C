@@ -215,14 +215,14 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     float tc_temp[NTRIALS] = {};
     for ( int i = 0; i < NTILE; i++ ){
 
-        h1_tile_dc[i] = new TH1D(Form("h1_tile_dc_%d_%d_ch%d",ch1, ch2, i), "",10, 0.1, 0.56);
-        h1_temp_scan[i] = new TH1D(Form("h1_temp_scan_%d_%d_ch%d",ch1, ch2, i), "",100, 0.0, 1.0);
-        h1_RMS_scan[i] = new TH1D(Form("h1_RMS_scan_%d_%d_ch%d",ch1, ch2, i), ";RMS [#mu A];",100, 0.0, 0.025);
-        h1_RMS_on[i] = new TH1D(Form("h1_RMS_on_%d_%d_ch%d",ch1, ch2, i), "",100, 0.0, 0.025);
-        h1_RMS_off[i] = new TH1D(Form("h1_RMS_off_%d_%d_ch%d", ch1, ch2, i), "",100, 0.0, 0.025);
-        h1_tile_dc2[i] = new TH1D(Form("h1_tile_dc2_%d_%d_ch%d",ch1, ch2, i), "",10, 0.1, 0.6);
-        h1_RMS_on2[i] = new TH1D(Form("h1_RMS_on2_%d_%d_ch%d",ch1, ch2, i), "",100, 0.0, 0.025);
-        h1_RMS_off2[i] = new TH1D(Form("h1_RMS_off2_%d_%d_ch%d",ch1, ch2, i), "",100, 0.0, 0.025);
+      h1_tile_dc[i] = new TH1D(Form("h1_tile_dc_%d_%d_ch%d",ch1, ch2, i), "",10, 0.1, 0.56);
+      h1_temp_scan[i] = new TH1D(Form("h1_temp_scan_%d_%d_ch%d",ch1, ch2, i), "",100, 0.0, 1.0);
+      h1_RMS_scan[i] = new TH1D(Form("h1_RMS_scan_%d_%d_ch%d",ch1, ch2, i), ";RMS [#mu A];",100, 0.0, 0.025);
+      h1_RMS_on[i] = new TH1D(Form("h1_RMS_on_%d_%d_ch%d",ch1, ch2, i), "",100, 0.0, 0.025);
+      h1_RMS_off[i] = new TH1D(Form("h1_RMS_off_%d_%d_ch%d", ch1, ch2, i), "",100, 0.0, 0.025);
+      h1_tile_dc2[i] = new TH1D(Form("h1_tile_dc2_%d_%d_ch%d",ch1, ch2, i), "",10, 0.1, 0.6);
+      h1_RMS_on2[i] = new TH1D(Form("h1_RMS_on2_%d_%d_ch%d",ch1, ch2, i), "",100, 0.0, 0.025);
+      h1_RMS_off2[i] = new TH1D(Form("h1_RMS_off2_%d_%d_ch%d",ch1, ch2, i), "",100, 0.0, 0.025);
     }
     TH1D *h1_bin_response_temp[NTILE];
     TProfile *h1_tile_response[NTILE];
@@ -348,8 +348,8 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     if (debug) printf(" --------------------------------------------- \n");
     double ymid = 24;
     for(int it = 0; it < NTILE; it++){
-        mean_dc[it] = h1_tile_dc[it]->GetMean();
-        rms_dc[it] = h1_tile_dc[it]->GetRMS();
+      mean_dc[it] = h1_tile_dc[it]->GetMean();
+      rms_dc[it] = h1_tile_dc[it]->GetRMS();
 
       if (debug) printf("Tile %d: %f +/- %f -> %f +/- %f = %f\n", it, mean_dc[it], rms_dc[it], mean_dc2[it], rms_dc2[it], slope_dc[it]);
       nScanCount[it] = 0;
@@ -436,7 +436,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
           h1_tile_rmon[tile->at(it)]->Fill(pos[x_or_y], rmonTemp*42);
           h1_all_imon[tile->at(it)]->Set(h1_all_imon[tile->at(it)]->GetN()+1);
           h1_all_imon[tile->at(it)]->SetPoint(h1_all_imon[tile->at(it)]->GetN()-1, h1_all_imon[tile->at(it)]->GetN()-1, imonTemp);
-            //std::cout<<pos[0]<<", "<<pos[1]<<": "<< tile->at(it)<<" = "<<imonTemp<<endl;
+	  //std::cout<<pos[0]<<", "<<pos[1]<<": "<< tile->at(it)<<" = "<<imonTemp<<endl;
         }
       }//tile
 
@@ -467,7 +467,6 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       double s = h1_tile_response[i]->GetBinContent(h1_tile_response[i]->GetMaximumBin());
       h1_tile_response_norm[i]->Scale(1./s);
     }
-
     // Make a blank hist gor fun.
     TH1D *h_blank = new TH1D("h_blank", ";x [cm]; <I>_{sig} - <I>_{dark}", nsteps, 4, 88);
     h_blank->SetMaximum(max_y);
@@ -528,106 +527,106 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
     c_full->SaveAs(Form("%s%s.png", save_dir_plot.c_str(), fname.c_str()));
     c_full->SaveAs(Form("%s%s.pdf", save_dir_plot.c_str(), fname.c_str()));
 
-/////////////////
+    /////////////////
 
     if ((ch_1 == 30 || ch_2 == 30)&& (ch_1 == 1 || ch_2 == 1)) {
-  TCanvas *c_four = new TCanvas("c_four", "");
-  int k = 0;
-  for (int i = 0; i <13 ; i++){
-    int h1 = 0;
-    int h2 = 0;
-    for (int j = 0; j < 4;j++){
-      if(j == 0){
-        double centerbin = 0;
-        int maxbin = h1_tile_response[2*(i+1)+k ]->GetMaximumBin();
-        for ( int l = maxbin; l < nsteps; l++){
-          if(h1_tile_response[2*(i +1)+ k]->GetBinContent(l) <= h1_tile_response[2*(i+2)+k]->GetBinContent(l)){
-            centerbin = l;
-            break;
-          }
-        }
-        if (centerbin == 0)centerbin = maxbin + 5;
-        double low_x = h1_tile_response[2*i+k]->GetBinCenter(centerbin) - 25;
-        double high_x = h1_tile_response[2*i+k]->GetBinCenter(centerbin) + 25;
+      TCanvas *c_four = new TCanvas("c_four", "");
+      int k = 0;
+      for (int i = 0; i <13 ; i++){
+	int h1 = 0;
+	int h2 = 0;
+	for (int j = 0; j < 4;j++){
+	  if(j == 0){
+	    double centerbin = 0;
+	    int maxbin = h1_tile_response[2*(i+1)+k ]->GetMaximumBin();
+	    for ( int l = maxbin; l < nsteps; l++){
+	      if(h1_tile_response[2*(i +1)+ k]->GetBinContent(l) <= h1_tile_response[2*(i+2)+k]->GetBinContent(l)){
+		centerbin = l;
+		break;
+	      }
+	    }
+	    if (centerbin == 0)centerbin = maxbin + 5;
+	    double low_x = h1_tile_response[2*i+k]->GetBinCenter(centerbin) - 25;
+	    double high_x = h1_tile_response[2*i+k]->GetBinCenter(centerbin) + 25;
 
-        h_blank->GetXaxis()->SetRangeUser(low_x, high_x);
-        h_blank->Draw("hist");
-        h1_tile_response[2*i + k]->SetLineColor(colors16[0]);
-        h1_tile_response[2*i + k]->SetLineWidth(2);
-        h1_tile_response[2*i + k]->SetMaximum(max_y);
-        h1_tile_response[2*i + k]->Draw("hist same");
-        h1 = 2*i+k;
-        if(h1 == 0) h1 = 1;
+	    h_blank->GetXaxis()->SetRangeUser(low_x, high_x);
+	    h_blank->Draw("hist");
+	    h1_tile_response[2*i + k]->SetLineColor(colors16[0]);
+	    h1_tile_response[2*i + k]->SetLineWidth(2);
+	    h1_tile_response[2*i + k]->SetMaximum(max_y);
+	    h1_tile_response[2*i + k]->Draw("hist same");
+	    h1 = 2*i+k;
+	    if(h1 == 0) h1 = 1;
+	  }
+	  else{
+	    h1_tile_response[2*(i+j)+k]->SetLineColor(colors16[j]);
+	    h1_tile_response[2*(i+j)+k]->SetLineWidth(2);
+	    h1_tile_response[2*(i+j)+k]->Draw("hist same");
+	    h2 = 2*(i+j)+k;
+	  }
+	}
+	drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
+	drawText(Form("%s Crosstalk Test", sector_addon) ,xPos,yPos-dy2,0, 1, fontSize, fontType);
+	drawText(Form("Sector %s", sector_addon),xPos,yPos-2*dy2,0, 1, fontSize, fontType);
+	// drawText("SiPM Switched",xPos,yPos-3*dy2,0, 1, fontSize, fontType);
+	drawText(Form( "Tiles: %d, %d, %d, %d", h1, h2 - 4, h2 -2, h2),xPos,yPos-4*dy2,0, 1, fontSize, fontType);
+
+	c_four->SaveAs(Form("%s%s_%d_%d.png", save_dir_plot.c_str(), fname.c_str(), h1, h2));
+	c_four->SaveAs(Form("%s%s_%d_%d.pdf", save_dir_plot.c_str(), fname.c_str(), h1, h2));
       }
-      else{
-        h1_tile_response[2*(i+j)+k]->SetLineColor(colors16[j]);
-        h1_tile_response[2*(i+j)+k]->SetLineWidth(2);
-        h1_tile_response[2*(i+j)+k]->Draw("hist same");
-        h2 = 2*(i+j)+k;
-      }
+
     }
-    drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-    drawText(Form("%s Crosstalk Test", sector_addon) ,xPos,yPos-dy2,0, 1, fontSize, fontType);
-    drawText(Form("Sector %s", sector_addon),xPos,yPos-2*dy2,0, 1, fontSize, fontType);
-    // drawText("SiPM Switched",xPos,yPos-3*dy2,0, 1, fontSize, fontType);
-    drawText(Form( "Tiles: %d, %d, %d, %d", h1, h2 - 4, h2 -2, h2),xPos,yPos-4*dy2,0, 1, fontSize, fontType);
-
-    c_four->SaveAs(Form("%s%s_%d_%d.png", save_dir_plot.c_str(), fname.c_str(), h1, h2));
-    c_four->SaveAs(Form("%s%s_%d_%d.pdf", save_dir_plot.c_str(), fname.c_str(), h1, h2));
-  }
-
-}
     else if ((ch_1 == 31 || ch_2 == 31) && (ch_1 == 1 || ch_2 == 1)) {
-  TCanvas *c_four = new TCanvas("c_four", "");
-  int k = 1;
-  for (int i = 0; i <13 ; i++){
-    int h1 = 0;
-    int h2 = 0;
-    for (int j = 0; j < 4;j++){
-      if(j == 0){
-        double centerbin = 0;
-        int maxbin = h1_tile_response[2*(i+1)+k ]->GetMaximumBin();
-        for ( int l = maxbin; l < nsteps; l++){
-          if(h1_tile_response[2*(i +1)+ k]->GetBinContent(l) <= h1_tile_response[2*(i+2)+k]->GetBinContent(l)){
-            centerbin = l;
-            break;
-          }
-        }
-        if (centerbin == 0)centerbin = maxbin + 5;
-        double low_x = h1_tile_response[2*i+k]->GetBinCenter(centerbin) - 25;
-        double high_x = h1_tile_response[2*i+k]->GetBinCenter(centerbin) + 25;
+      TCanvas *c_four = new TCanvas("c_four", "");
+      int k = 1;
+      for (int i = 0; i <13 ; i++){
+	int h1 = 0;
+	int h2 = 0;
+	for (int j = 0; j < 4;j++){
+	  if(j == 0){
+	    double centerbin = 0;
+	    int maxbin = h1_tile_response[2*(i+1)+k ]->GetMaximumBin();
+	    for ( int l = maxbin; l < nsteps; l++){
+	      if(h1_tile_response[2*(i +1)+ k]->GetBinContent(l) <= h1_tile_response[2*(i+2)+k]->GetBinContent(l)){
+		centerbin = l;
+		break;
+	      }
+	    }
+	    if (centerbin == 0)centerbin = maxbin + 5;
+	    double low_x = h1_tile_response[2*i+k]->GetBinCenter(centerbin) - 25;
+	    double high_x = h1_tile_response[2*i+k]->GetBinCenter(centerbin) + 25;
 
-        h_blank->GetXaxis()->SetRangeUser(low_x, high_x);
-        h_blank->Draw("hist");
-        h1_tile_response[2*i + k]->SetLineColor(colors16[0]);
-        h1_tile_response[2*i + k]->SetLineWidth(2);
-        h1_tile_response[2*i + k]->SetMaximum(max_y);
-        h1_tile_response[2*i+k]->SetMinimum(min_y);
+	    h_blank->GetXaxis()->SetRangeUser(low_x, high_x);
+	    h_blank->Draw("hist");
+	    h1_tile_response[2*i + k]->SetLineColor(colors16[0]);
+	    h1_tile_response[2*i + k]->SetLineWidth(2);
+	    h1_tile_response[2*i + k]->SetMaximum(max_y);
+	    h1_tile_response[2*i+k]->SetMinimum(min_y);
 
-        h1_tile_response[2*i + k]->Draw("hist same");
-        h1 = 2*i+k;
-        if(h1 == 0) h1 = 1;
+	    h1_tile_response[2*i + k]->Draw("hist same");
+	    h1 = 2*i+k;
+	    if(h1 == 0) h1 = 1;
+	  }
+	  else{
+	    h1_tile_response[2*(i+j)+k]->SetLineColor(colors16[j]);
+	    h1_tile_response[2*(i+j)+k]->SetLineWidth(2);
+	    h1_tile_response[2*(i+j)+k]->Draw("hist same");
+	    h2 = 2*(i+j)+k;
+	  }
+	}
+	drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
+	drawText(Form("%s Crosstalk Test", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
+	drawText(Form("Sector %s", sector_addon),xPos,yPos-2*dy2,0, 1, fontSize, fontType);
+	// drawText("SiPM Switched",xPos,yPos-3*dy2,0, 1, fontSize, fontType);
+	drawText(Form( "Tiles: %d, %d, %d, %d", h1, h2 - 4, h2 -2, h2),xPos,yPos-4*dy2,0, 1, fontSize, fontType);
+
+	c_four->SaveAs(Form("%s%s_%d_%d.png", save_dir_plot.c_str(), fname.c_str(), h1, h2));
+	c_four->SaveAs(Form("%s%s_%d_%d.pdf", save_dir_plot.c_str(), fname.c_str(), h1, h2));
       }
-      else{
-        h1_tile_response[2*(i+j)+k]->SetLineColor(colors16[j]);
-        h1_tile_response[2*(i+j)+k]->SetLineWidth(2);
-        h1_tile_response[2*(i+j)+k]->Draw("hist same");
-        h2 = 2*(i+j)+k;
-      }
+
     }
-    drawText("#bf{sPHENIX} #it{Internal}",xPos,yPos,0, 1, fontSize+2, fontType);
-    drawText(Form("%s Crosstalk Test", sector_addon),xPos,yPos-dy2,0, 1, fontSize, fontType);
-    drawText(Form("Sector %s", sector_addon),xPos,yPos-2*dy2,0, 1, fontSize, fontType);
-    // drawText("SiPM Switched",xPos,yPos-3*dy2,0, 1, fontSize, fontType);
-    drawText(Form( "Tiles: %d, %d, %d, %d", h1, h2 - 4, h2 -2, h2),xPos,yPos-4*dy2,0, 1, fontSize, fontType);
 
-    c_four->SaveAs(Form("%s%s_%d_%d.png", save_dir_plot.c_str(), fname.c_str(), h1, h2));
-    c_four->SaveAs(Form("%s%s_%d_%d.pdf", save_dir_plot.c_str(), fname.c_str(), h1, h2));
-  }
-
-}
-
-//////////////////////
+    //////////////////////
     TCanvas *c_full_norm = new TCanvas("c_full_norm", "");
     oo = 0;
     max_y = 1.3;
@@ -641,8 +640,8 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
         h1_tile_response_norm[i]->SetTitle(";x [cm]; <I>_{sig} - <I>_{dark}");
         h1_tile_response_norm[i]->SetLineColor(colors16[0]);
         h1_tile_response_norm[i]->SetLineWidth(2);
-        h1_tile_response_norm[i]->SetMaximum(max_y);
-        h1_tile_response_norm[i]->SetMinimum(min_y);
+        //h1_tile_response_norm[i]->SetMaximum(max_y);
+        //h1_tile_response_norm[i]->SetMinimum(min_y);
 
         h1_tile_response_norm[i]->Draw("hist");
       }
@@ -685,7 +684,9 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       hp_ratio->SetBinError(floor(ch_1/2), *(rats_rats_rats+1));
 
     }
+
     FillCrossTalk(h2D_crosstalk, h1_tile_response_norm, ch_1, ch_2);
+    
     int write = GetCrosstalkDistance(h1_bin_response_temp, max_x,bag,end, h1_tile_response_norm, ch_1, ch_2);
     for (int i = 0; i < NTILE; i++){
       int ns = 0;
@@ -710,22 +711,24 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
       h1_all_rmon[i]->Write();
       h1_all_imon[i]->Write();
     }
+    std::cout << "HERE" << std::endl;
     if (debug) cout<<"End file "<<ff<<endl;
   }
 
   TCanvas *c_cross = new TCanvas("c_cross","",1000, 1000);
   gPad->SetLogz();
-  for (int i = 1; i< 32; i++){
-    h2D_crosstalk->Fill(i, i, 1);
+  for (int i = 1; i < 32; i++){
+    for (int j = 1; j < 32; j++){
+      std::cout << i << " / " << j << " " << h2D_crosstalk->GetBinContent(i, j) << std::endl;
+    }
+    
+    //
   }
   h2D_crosstalk->SetTitle(";Read Tile; Source Over Tile");
   h2D_crosstalk->Draw("colz");
   c_cross->SaveAs(Form("%s/crosstalk_test.png", save_dir_plot.c_str()));
   c_cross->SaveAs(Form("%s/crosstalk_test.pdf", save_dir_plot.c_str()));
 
-
-  out_hist_file->cd();
-  h2D_crosstalk->Write();
 
 
   /////////
@@ -903,7 +906,7 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
   out_hist_file->cd();
   h_tile_cross_near->Write();
   h_tile_cross_far->Write();
-////////////
+  ////////////
 
 
 
@@ -1059,11 +1062,9 @@ void Analyze(std::vector<std::string> &filenames, const int sector, const std::s
 
   out_hist_file->cd();
   hp_ratio->Write();
+  h2D_crosstalk->Write();
+
   out_hist_file->Close();
-
-
-
-
   return;
 }
 
@@ -1071,7 +1072,7 @@ int Line_Test_Analysis(const std::string &config_file= "line_config.config")
 {
   bool debug = false;
   if (debug) cout<< "In the code... Getting config file"<<endl;
-// Input configuration file
+  // Input configuration file
   TEnv *config_p = new TEnv(config_file.c_str());
   const int sector = config_p->GetValue("SECTOR", 0);
   const int all_runs = config_p->GetValue("ALLRUNS", 1);
